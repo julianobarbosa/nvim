@@ -1,0 +1,232 @@
+-- Framework-specific DAP tests
+local M = {}
+
+-- Utility functions
+local function create_test_env()
+  vim.fn.mkdir('test_project', 'p')
+  vim.fn.chdir('test_project')
+end
+
+local function cleanup_test_env()
+  vim.fn.chdir('..')
+  vim.fn.delete('test_project', 'rf')
+end
+
+-- Django test environment
+local django_tests = {
+  setup = function()
+    create_test_env()
+    
+    -- Create Django project structure
+    os.execute('django-admin startproject testproject .')
+    os.execute('python manage.py startapp testapp')
+    
+    -- Create test views
+    local view_content = [[
+from django.http import HttpResponse
+
+def index(request):
+    x = 1
+    y = 2
+    result = x + y  # Breakpoint here
+    return HttpResponse(f"Result: {result}")
+    ]]
+    
+    local f = io.open('testapp/views.py', 'w')
+    if f then
+      f:write(view_content)
+      f:close()
+    end
+  end,
+  
+  cleanup = function()
+    cleanup_test_env()
+  end,
+  
+  tests = {
+    test_django_breakpoint = function()
+      local dap = require('dap')
+      
+      -- Configure Django debugging
+      dap.configurations.python = {
+        {
+          type = 'python',
+          request = 'launch',
+          name = 'Django',
+          program = vim.fn.getcwd() .. '/manage.py',
+          args = {'runserver'},
+          django = true
+        }
+      }
+      
+      -- Set breakpoint in views.py
+      vim.cmd('edit testapp/views.py')
+      vim.fn.cursor(5, 1)
+      dap.toggle_breakpoint()
+      
+      return true
+    end
+  }
+}
+
+-- Flask test environment
+local flask_tests = {
+  setup = function()
+    create_test_env()
+    
+    -- Create Flask application
+    local app_content = [[
+from flask import Flask
+app = Flask(__name__)
+
+@app.route('/')
+def hello():
+    message = "Hello"  # Breakpoint here
+    return message
+
+if __name__ == '__main__':
+    app.run(debug=True)
+    ]]
+    
+    local f = io.open('app.py', 'w')
+    if f then
+      f:write(app_content)
+      f:close()
+    end
+  end,
+  
+  cleanup = function()
+    cleanup_test_env()
+  end,
+  
+  tests = {
+    test_flask_breakpoint = function()
+      local dap = require('dap')
+      
+      -- Configure Flask debugging
+      dap.configurations.python = {
+        {
+          type = 'python',
+          request = 'launch',
+          name = 'Flask',
+          program = vim.fn.getcwd() .. '/app.py',
+          env = {
+            FLASK_APP = 'app.py',
+            FLASK_ENV = 'development'
+          }
+        }
+      }
+      
+      -- Set breakpoint in app.py
+      vim.cmd('edit app.py')
+      vim.fn.cursor(6, 1)
+      dap.toggle_breakpoint()
+      
+      return true
+    end
+  }
+}
+
+-- FastAPI test environment
+local fastapi_tests = {
+  setup = function()
+    create_test_env()
+    
+    -- Create FastAPI application
+    local app_content = [[
+from fastapi import FastAPI
+app = FastAPI()
+
+@app.get("/")
+async def root():
+    data = {"message": "Hello"}  # Breakpoint here
+    return data
+    ]]
+    
+    local f = io.open('main.py', 'w')
+    if f then
+      f:write(app_content)
+      f:close()
+    end
+  end,
+  
+  cleanup = function()
+    cleanup_test_env()
+  end,
+  
+  tests = {
+    test_fastapi_breakpoint = function()
+      local dap = require('dap')
+      
+      -- Configure FastAPI debugging
+      dap.configurations.python = {
+        {
+          type = 'python',
+          request = 'launch',
+          name = 'FastAPI',
+          program = vim.fn.getcwd() .. '/main.py',
+          env = {
+            PYTHONPATH = vim.fn.getcwd()
+          },
+          args = {
+            '--reload'
+          }
+        }
+      }
+      
+      -- Set breakpoint in main.py
+      vim.cmd('edit main.py')
+      vim.fn.cursor(6, 1)
+      dap.toggle_breakpoint()
+      
+      return true
+    end
+  }
+}
+
+-- Run framework-specific tests
+function M.run_framework_tests()
+  print("\n=== Running Framework-Specific Tests ===")
+  
+  local frameworks = {
+    {name = "Django", suite = django_tests},
+    {name = "Flask", suite = flask_tests},
+    {name = "FastAPI", suite = fastapi_tests}
+  }
+  
+  local results = {}
+  
+  for _, framework in ipairs(frameworks) do
+    print(string.format("\nTesting %s Framework", framework.name))
+    
+    -- Setup framework environment
+    framework.suite.setup()
+    
+    -- Run tests
+    for name, test_fn in pairs(framework.suite.tests) do
+      local success, result = pcall(test_fn)
+      table.insert(results, {
+        framework = framework.name,
+        test = name,
+        passed = success and result,
+        error = not success and result or nil
+      })
+      
+      print(string.format("  %s: %s",
+        name,
+        success and (result and "✓" or "✗") or "!"
+      ))
+      
+      if not success then
+        print("    Error: " .. result)
+      end
+    end
+    
+    -- Cleanup
+    framework.suite.cleanup()
+  end
+  
+  return results
+end
+
+return M

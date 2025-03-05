@@ -1,0 +1,200 @@
+-- Enhanced DAP Test Report Generator with System Information
+local M = {}
+local system_info = require('custom.plugins.system_info')
+
+-- Format utilities
+local function format_bytes(bytes)
+  local units = {'B', 'KB', 'MB', 'GB'}
+  local size = bytes
+  local unit_index = 1
+  
+  while size > 1024 and unit_index < #units do
+    size = size / 1024
+    unit_index = unit_index + 1
+  end
+  
+  return string.format("%.2f %s", size, units[unit_index])
+end
+
+local function format_duration(ms)
+  if ms < 1 then
+    return string.format("%.3f ms", ms)
+  else
+    return string.format("%.2f ms", ms)
+  end
+end
+
+-- Generate report sections
+local function generate_header()
+  local lines = {
+    "# DAP Test Report",
+    "",
+    string.format("Generated: %s", os.date()),
+    "",
+    "---",
+    ""
+  }
+  return table.concat(lines, "\n")
+end
+
+local function generate_system_section()
+  local sys_info = system_info.collect_all()
+  return system_info.format_for_report(sys_info)
+end
+
+local function generate_test_summary(results, total_time, failures)
+  local lines = {
+    "",
+    "## Test Summary",
+    "```",
+    string.format("Total Execution Time: %s", format_duration(total_time)),
+    string.format("Test Cases: %d", #results.functional + #results.performance + #results.memory),
+    string.format("Failures: %d", failures),
+    "```",
+    ""
+  }
+  return table.concat(lines, "\n")
+end
+
+local function generate_functional_section(results)
+  local lines = {
+    "## Functional Tests",
+    "",
+    "| Test | Status | Details |",
+    "|------|--------|---------|"
+  }
+  
+  for _, result in ipairs(results) do
+    table.insert(lines, string.format("| %s | %s | %s |",
+      result.name,
+      result.passed and "✅ PASS" or "❌ FAIL",
+      result.details or "N/A"
+    ))
+  end
+  
+  table.insert(lines, "")
+  return table.concat(lines, "\n")
+end
+
+local function generate_performance_section(results, thresholds)
+  local lines = {
+    "## Performance Tests",
+    "",
+    "| Operation | Duration | Threshold | Status |",
+    "|-----------|----------|-----------|--------|"
+  }
+  
+  for _, result in ipairs(results) do
+    local threshold = thresholds.performance[result.name:lower():gsub("%s+", "_")]
+    table.insert(lines, string.format("| %s | %s | %s | %s |",
+      result.name,
+      format_duration(result.duration),
+      threshold and format_duration(threshold) or "N/A",
+      threshold and result.duration <= threshold and "✅" or "⚠️"
+    ))
+  end
+  
+  table.insert(lines, "")
+  return table.concat(lines, "\n")
+end
+
+local function generate_memory_section(results, thresholds)
+  local lines = {
+    "## Memory Usage",
+    "",
+    "| Operation | Lua Memory | Process Memory | Threshold | Status |",
+    "|-----------|------------|----------------|-----------|--------|"
+  }
+  
+  for _, result in ipairs(results) do
+    local threshold = thresholds.memory[result.name:lower():gsub("%s+", "_")]
+    table.insert(lines, string.format("| %s | %s | %s | %s | %s |",
+      result.name,
+      format_bytes(result.lua_delta),
+      result.process_delta and format_bytes(result.process_delta) or "N/A",
+      threshold and format_bytes(threshold) or "N/A",
+      threshold and result.lua_delta <= threshold and "✅" or "⚠️"
+    ))
+  end
+  
+  table.insert(lines, "")
+  return table.concat(lines, "\n")
+end
+
+local function generate_recommendations(results, thresholds)
+  local lines = {"## Recommendations", ""}
+  local issues = {}
+  
+  -- Performance issues
+  for _, result in ipairs(results.performance) do
+    local threshold = thresholds.performance[result.name:lower():gsub("%s+", "_")]
+    if threshold and result.duration > threshold then
+      table.insert(issues, string.format(
+        "- Performance: %s exceeds threshold (current: %s, target: %s)",
+        result.name,
+        format_duration(result.duration),
+        format_duration(threshold)
+      ))
+    end
+  end
+  
+  -- Memory issues
+  for _, result in ipairs(results.memory) do
+    local threshold = thresholds.memory[result.name:lower():gsub("%s+", "_")]
+    if threshold and result.lua_delta > threshold then
+      table.insert(issues, string.format(
+        "- Memory: %s exceeds threshold (current: %s, target: %s)",
+        result.name,
+        format_bytes(result.lua_delta),
+        format_bytes(threshold)
+      ))
+    end
+  end
+  
+  if #issues > 0 then
+    table.insert(lines, "### Areas for Improvement")
+    for _, issue in ipairs(issues) do
+      table.insert(lines, issue)
+    end
+  else
+    table.insert(lines, "✅ All tests are within acceptable thresholds.")
+  end
+  
+  table.insert(lines, "")
+  return table.concat(lines, "\n")
+end
+
+-- Main report generation function
+function M.generate_report(results, total_time, failures, thresholds)
+  local sections = {
+    generate_header(),
+    generate_system_section(),
+    generate_test_summary(results, total_time, failures),
+    generate_functional_section(results.functional),
+    generate_performance_section(results.performance, thresholds),
+    generate_memory_section(results.memory, thresholds),
+    generate_recommendations(results, thresholds)
+  }
+  
+  return table.concat(sections, "\n")
+end
+
+-- Save report to file
+function M.save_report(report)
+  -- Create reports directory if it doesn't exist
+  vim.fn.mkdir('test-reports', 'p')
+  
+  -- Generate filename with timestamp
+  local filename = string.format('test-reports/dap_test_report_%s.md',
+    os.date('%Y%m%d_%H%M%S'))
+  
+  local file = io.open(filename, 'w')
+  if file then
+    file:write(report)
+    file:close()
+    return filename
+  end
+  return nil
+end
+
+return M

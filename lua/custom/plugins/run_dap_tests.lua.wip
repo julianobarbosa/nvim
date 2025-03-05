@@ -1,0 +1,59 @@
+-- DAP Test Runner
+local tests = require('custom.plugins.dap_test')
+
+-- Configuration
+local config = {
+  setup_delay = 1000,  -- milliseconds to wait for DAP setup
+  cleanup = true,      -- clean up test artifacts
+  verbose = true       -- detailed output
+}
+
+-- Test environment setup
+local function setup_test_env()
+  -- Ensure required plugins are available
+  vim.cmd([[packadd nvim-dap]])
+  vim.cmd([[packadd nvim-dap-ui]])
+  
+  -- Load DAP configuration
+  require('custom.plugins.dap').setup()
+  
+  -- Wait for setup to complete
+  vim.defer_fn(function() 
+    print("Test environment ready")
+  end, config.setup_delay)
+end
+
+-- Test environment cleanup
+local function cleanup_test_env()
+  if config.cleanup then
+    -- Clean up any test artifacts
+    if vim.fn.isdirectory('test_venv') == 1 then
+      vim.fn.delete('test_venv', 'rf')
+    end
+  end
+end
+
+-- Run tests with proper setup/teardown
+local function run_tests()
+  print("Setting up test environment...")
+  setup_test_env()
+  
+  vim.defer_fn(function()
+    -- Run all tests
+    tests.run_all_tests()
+    
+    -- Cleanup
+    cleanup_test_env()
+    
+    print("\nTest execution completed.")
+  end, config.setup_delay + 100)
+end
+
+-- Command to run tests
+vim.api.nvim_create_user_command('TestDAP', run_tests, {})
+
+-- Return the runner for programmatic usage
+return {
+  run = run_tests,
+  config = config
+}

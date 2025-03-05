@@ -1,0 +1,153 @@
+-- System Information Collection for DAP Testing
+local M = {}
+
+-- Get Neovim version and build info
+function M.get_nvim_info()
+  return {
+    version = vim.version(),
+    build_type = vim.fn.has('nvim-0.5') == 1 and 'stable' or 'development',
+    platform = vim.fn.has('win32') == 1 and 'windows' or vim.fn.has('macunix') == 1 and 'macos' or 'linux',
+    features = {
+      python = vim.fn.has('python3') == 1,
+      lua = vim.fn.has('lua') == 1,
+      terminal = vim.fn.has('terminal') == 1
+    }
+  }
+end
+
+-- Get plugin versions
+function M.get_plugin_versions()
+  local plugins = {
+    dap = package.loaded['dap'],
+    dapui = package.loaded['dapui'],
+    debugpy = vim.fn.executable('debugpy-adapter') == 1
+  }
+  
+  return plugins
+end
+
+-- Get Python environment info
+function M.get_python_info()
+  local python_info = {}
+  
+  -- Get Python version
+  local python_version = vim.fn.system('python --version 2>&1'):match('Python%s+([%d%.]+)')
+  python_info.version = python_version or 'not found'
+  
+  -- Check virtual environment
+  python_info.venv = os.getenv('VIRTUAL_ENV')
+  
+  -- Check debugpy installation
+  local debugpy_check = vim.fn.system('pip show debugpy 2>/dev/null')
+  python_info.debugpy = debugpy_check ~= '' and true or false
+  
+  -- Check web frameworks
+  python_info.frameworks = {
+    django = vim.fn.system('pip show django 2>/dev/null') ~= '',
+    flask = vim.fn.system('pip show flask 2>/dev/null') ~= '',
+    pyramid = vim.fn.system('pip show pyramid 2>/dev/null') ~= ''
+  }
+  
+  return python_info
+end
+
+-- Get system resources
+function M.get_system_resources()
+  local resources = {}
+  
+  -- Memory information
+  if vim.loop.get_free_memory then
+    local total_memory = vim.loop.get_total_memory()
+    local free_memory = vim.loop.get_free_memory()
+    resources.memory = {
+      total = total_memory,
+      free = free_memory,
+      used = total_memory - free_memory
+    }
+  end
+  
+  -- CPU information
+  if vim.loop.cpu_info then
+    resources.cpu = vim.loop.cpu_info()
+  end
+  
+  -- Process information
+  if vim.loop.getrusage then
+    resources.process = vim.loop.getrusage()
+  end
+  
+  return resources
+end
+
+-- Get complete system information
+function M.collect_all()
+  return {
+    timestamp = os.time(),
+    nvim = M.get_nvim_info(),
+    plugins = M.get_plugin_versions(),
+    python = M.get_python_info(),
+    system = M.get_system_resources()
+  }
+end
+
+-- Format system information for report
+function M.format_for_report(info)
+  local lines = {
+    "## System Information",
+    "",
+    "### Neovim",
+    "```",
+    string.format("Version: %s.%s.%s", info.nvim.version.major, info.nvim.version.minor, info.nvim.version.patch),
+    string.format("Build: %s", info.nvim.build_type),
+    string.format("Platform: %s", info.nvim.platform),
+    "```",
+    "",
+    "### Plugins",
+    "```",
+    string.format("DAP: %s", info.plugins.dap and "✓" or "✗"),
+    string.format("DAP UI: %s", info.plugins.dapui and "✓" or "✗"),
+    string.format("debugpy: %s", info.plugins.debugpy and "✓" or "✗"),
+    "```",
+    "",
+    "### Python Environment",
+    "```",
+    string.format("Version: %s", info.python.version),
+    string.format("Virtual Environment: %s", info.python.venv or "none"),
+    string.format("debugpy: %s", info.python.debugpy and "installed" or "not found"),
+    "",
+    "Frameworks:",
+    string.format("- Django: %s", info.python.frameworks.django and "✓" or "✗"),
+    string.format("- Flask: %s", info.python.frameworks.flask and "✓" or "✗"),
+    string.format("- Pyramid: %s", info.python.frameworks.pyramid and "✓" or "✗"),
+    "```"
+  }
+  
+  -- Add system resources if available
+  if info.system.memory then
+    table.insert(lines, "")
+    table.insert(lines, "### System Resources")
+    table.insert(lines, "```")
+    table.insert(lines, string.format("Memory Total: %s", M.format_bytes(info.system.memory.total)))
+    table.insert(lines, string.format("Memory Free: %s", M.format_bytes(info.system.memory.free)))
+    table.insert(lines, string.format("Memory Used: %s", M.format_bytes(info.system.memory.used)))
+    table.insert(lines, "```")
+  end
+  
+  return table.concat(lines, "\n")
+end
+
+-- Utility function to format bytes
+function M.format_bytes(bytes)
+  local units = {'B', 'KB', 'MB', 'GB'}
+  local size = bytes
+  local unit_index = 1
+  
+  while size > 1024 and unit_index < #units do
+    size = size / 1024
+    unit_index = unit_index + 1
+  end
+  
+  return string.format("%.2f %s", size, units[unit_index])
+end
+
+return M

@@ -1,0 +1,87 @@
+local M = {}
+local dap = require('dap')
+
+-- Test utilities
+local function create_test_venv()
+  os.execute('python -m venv test_venv')
+end
+
+local function cleanup_test_venv()
+  os.execute('rm -rf test_venv')
+end
+
+-- Test cases
+function M.test_venv_detection()
+  create_test_venv()
+  
+  local python_path = dap.configurations.python[1].pythonPath()
+  assert(python_path:match("test_venv/bin/python"),
+         "Virtual environment not detected correctly")
+         
+  cleanup_test_venv()
+end
+
+function M.test_dap_configurations()
+  -- Test Python configuration structure
+  local config = dap.configurations.python[1]
+  assert(config.type == 'python', "Invalid adapter type")
+  assert(config.request == 'launch', "Invalid request type")
+  assert(config.program == '${file}', "Invalid program path")
+  assert(type(config.pythonPath) == 'function', "pythonPath should be a function")
+  
+  -- Test remote debugging configuration
+  local remote_config = dap.configurations.python[2]
+  assert(remote_config.type == 'python', "Invalid remote adapter type")
+  assert(remote_config.request == 'attach', "Invalid remote request type")
+  assert(remote_config.connect.port == 5678, "Invalid remote debug port")
+end
+
+function M.test_ui_integration()
+  -- Test DAP UI setup
+  local status, dapui = pcall(require, 'dapui')
+  assert(status, "nvim-dap-ui not found")
+  
+  -- Test event listeners
+  assert(dap.listeners.after.event_initialized['dapui_config'],
+         "UI initialization listener not configured")
+  assert(dap.listeners.before.event_terminated['dapui_config'],
+         "UI termination listener not configured")
+end
+
+function M.test_framework_support()
+  local config = dap.configurations.python[1]
+  
+  -- Test framework debug options
+  local debug_options = config.debugOptions
+  assert(vim.tbl_contains(debug_options, 'Django'), "Django support missing")
+  assert(vim.tbl_contains(debug_options, 'Flask'), "Flask support missing")
+  assert(vim.tbl_contains(debug_options, 'Pyramid'), "Pyramid support missing")
+end
+
+function M.run_all_tests()
+  print("Running DAP configuration tests...")
+  
+  local tests = {
+    "test_venv_detection",
+    "test_dap_configurations",
+    "test_ui_integration",
+    "test_framework_support"
+  }
+  
+  local failures = 0
+  for _, test in ipairs(tests) do
+    print("\nRunning " .. test)
+    local status, error = pcall(M[test])
+    if not status then
+      print("FAILED: " .. error)
+      failures = failures + 1
+    else
+      print("PASSED")
+    end
+  end
+  
+  print(string.format("\nTest summary: %d passed, %d failed", 
+        #tests - failures, failures))
+end
+
+return M

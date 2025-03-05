@@ -1,0 +1,141 @@
+-- Memory usage monitoring for DAP
+local M = {}
+
+-- Memory monitoring utilities
+local function get_memory_usage()
+  local memory_info = {}
+  
+  -- Get Lua memory usage
+  memory_info.lua = collectgarbage('count') * 1024  -- Convert KB to bytes
+  
+  -- Get process memory if available
+  if vim.loop.resident_set_memory then
+    memory_info.process = vim.loop.resident_set_memory()
+  end
+  
+  return memory_info
+end
+
+local function format_bytes(bytes)
+  local units = {'B', 'KB', 'MB', 'GB'}
+  local size = bytes
+  local unit_index = 1
+  
+  while size > 1024 and unit_index < #units do
+    size = size / 1024
+    unit_index = unit_index + 1
+  end
+  
+  return string.format("%.2f %s", size, units[unit_index])
+end
+
+local function measure_memory(fn, name)
+  local before = get_memory_usage()
+  
+  -- Run the function
+  fn()
+  
+  -- Trigger garbage collection for accurate measurement
+  collectgarbage('collect')
+  local after = get_memory_usage()
+  
+  -- Calculate differences
+  local delta = {
+    lua = after.lua - before.lua,
+    process = (after.process and before.process) and (after.process - before.process) or nil
+  }
+  
+  return {
+    name = name,
+    lua_delta = delta.lua,
+    process_delta = delta.process,
+    peak_lua = after.lua,
+    peak_process = after.process
+  }
+end
+
+-- Memory benchmarks
+function M.benchmark_initialization()
+  local results = {}
+  
+  -- Measure DAP setup memory
+  table.insert(results, measure_memory(function()
+    require('custom.plugins.dap').setup()
+  end, "DAP Setup"))
+  
+  -- Measure UI initialization memory
+  table.insert(results, measure_memory(function()
+    require('dapui').setup()
+  end, "DAP UI Setup"))
+  
+  return results
+end
+
+function M.benchmark_debugger_memory()
+  local results = {}
+  local dap = require('dap')
+  
+  -- Memory impact of setting breakpoints
+  table.insert(results, measure_memory(function()
+    for _ = 1, 5 do
+      dap.toggle_breakpoint()
+    end
+  end, "Breakpoint Management"))
+  
+  -- Memory usage during virtual env detection
+  table.insert(results, measure_memory(function()
+    dap.configurations.python[1].pythonPath()
+  end, "Virtual Env Detection"))
+  
+  return results
+end
+
+function M.run_memory_benchmarks()
+  print("Running DAP Memory Usage Analysis...")
+  
+  local all_results = {}
+  local benchmarks = {
+    {name = "Initialization", fn = M.benchmark_initialization},
+    {name = "Debugger Operations", fn = M.benchmark_debugger_memory}
+  }
+  
+  -- Run all benchmarks
+  for _, benchmark in ipairs(benchmarks) do
+    print("\nExecuting " .. benchmark.name .. " memory analysis...")
+    local results = benchmark.fn()
+    
+    -- Print results
+    for _, result in ipairs(results) do
+      print(string.format("\n%s:", result.name))
+      print(string.format("  Lua Memory Delta: %s", format_bytes(result.lua_delta)))
+      if result.process_delta then
+        print(string.format("  Process Memory Delta: %s", format_bytes(result.process_delta)))
+      end
+      print(string.format("  Peak Lua Memory: %s", format_bytes(result.peak_lua)))
+      if result.peak_process then
+        print(string.format("  Peak Process Memory: %s", format_bytes(result.peak_process)))
+      end
+      table.insert(all_results, result)
+    end
+  end
+  
+  -- Memory usage summary
+  print("\nMemory Usage Summary:")
+  local total_lua_delta = 0
+  local total_process_delta = 0
+  for _, result in ipairs(all_results) do
+    total_lua_delta = total_lua_delta + result.lua_delta
+    if result.process_delta then
+      total_process_delta = total_process_delta + result.process_delta
+    end
+  end
+  
+  print(string.format("Total Lua Memory Impact: %s", format_bytes(total_lua_delta)))
+  if total_process_delta > 0 then
+    print(string.format("Total Process Memory Impact: %s", format_bytes(total_process_delta)))
+  end
+  
+  return all_results
+end
+
+return M

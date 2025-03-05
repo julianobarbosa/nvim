@@ -1,0 +1,162 @@
+-- Enhanced DAP Test Runner with Framework Support
+local functional_tests = require('custom.plugins.dap_test')
+local perf_tests = require('custom.plugins.dap_perf_test')
+local mem_tests = require('custom.plugins.dap_mem_test')
+local framework_tests = require('custom.plugins.dap_framework_test')
+local system_info = require('custom.plugins.system_info')
+local report = require('custom.plugins.test_report')
+
+-- Test configuration
+local config = {
+  setup_delay = 1000,      -- milliseconds to wait for DAP setup
+  cleanup = true,          -- clean up test artifacts
+  verbose = true,          -- detailed output
+  check_thresholds = true, -- enforce thresholds
+  frameworks = {           -- framework test configuration
+    enabled = true,
+    django = true,
+    flask = true,
+    fastapi = true
+  }
+}
+
+-- Performance thresholds
+local thresholds = {
+  performance = {
+    dap_setup = 500,
+    ui_setup = 200,
+    venv_detection = 100,
+    breakpoint_toggle = 50,
+    total_execution = 2000
+  },
+  memory = {
+    dap_setup = 5 * 1024 * 1024,      -- 5MB
+    ui_setup = 2 * 1024 * 1024,       -- 2MB
+    breakpoint_management = 512 * 1024 -- 512KB
+  }
+}
+
+-- Test environment setup
+local function setup_test_env()
+  print("Setting up test environment...")
+  vim.cmd([[packadd nvim-dap]])
+  vim.cmd([[packadd nvim-dap-ui]])
+  require('custom.plugins.dap').setup()
+  
+  vim.defer_fn(function() 
+    print("Test environment ready")
+  end, config.setup_delay)
+end
+
+-- Test environment cleanup
+local function cleanup_test_env()
+  if config.cleanup then
+    -- Clean up test artifacts
+    local artifacts = {'test_venv', 'perf_test_venv', 'test_project'}
+    for _, artifact in ipairs(artifacts) do
+      if vim.fn.isdirectory(artifact) == 1 then
+        vim.fn.delete(artifact, 'rf')
+      end
+    end
+  end
+end
+
+-- Run all tests with framework support
+local function run_all_tests()
+  local start_time = vim.loop.hrtime()
+  local total_failures = 0
+  local test_results = {
+    functional = {},
+    performance = {},
+    memory = {},
+    framework = {}
+  }
+  
+  -- Setup
+  setup_test_env()
+  
+  vim.defer_fn(function()
+    -- Collect system information
+    local sys_info = system_info.collect_all()
+    
+    -- Run all test suites
+    print("\n=== Running Functional Tests ===")
+    test_results.functional = functional_tests.run_all_tests()
+    
+    print("\n=== Running Performance Tests ===")
+    test_results.performance = perf_tests.run_benchmarks()
+    
+    print("\n=== Running Memory Tests ===")
+    test_results.memory = mem_tests.run_memory_benchmarks()
+    
+    -- Run framework tests if enabled
+    if config.frameworks.enabled then
+      print("\n=== Running Framework Tests ===")
+      test_results.framework = framework_tests.run_framework_tests()
+      
+      -- Count framework test failures
+      for _, result in ipairs(test_results.framework) do
+        if not result.passed then
+          total_failures = total_failures + 1
+        end
+      end
+    end
+    
+    -- Check thresholds
+    if config.check_thresholds then
+      -- Performance violations check
+      for _, result in ipairs(test_results.performance) do
+        local threshold = thresholds.performance[result.name:lower():gsub("%s+", "_")]
+        if threshold and result.duration > threshold then
+          total_failures = total_failures + 1
+        end
+      end
+      
+      -- Memory violations check
+      for _, result in ipairs(test_results.memory) do
+        local threshold = thresholds.memory[result.name:lower():gsub("%s+", "_")]
+        if threshold and result.lua_delta > threshold then
+          total_failures = total_failures + 1
+        end
+      end
+    end
+    
+    -- Calculate total execution time
+    local end_time = vim.loop.hrtime()
+    local total_time = (end_time - start_time) / 1000000
+    
+    -- Generate and save test report
+    local test_report = report.generate_report(test_results, total_time, total_failures, thresholds, sys_info)
+    local report_file = report.save_report(test_report)
+    
+    -- Cleanup
+    cleanup_test_env()
+    
+    -- Final summary
+    print(string.format("\nTest Suite Complete (%.2fms)", total_time))
+    print(string.format("Total Failures: %d", total_failures))
+    if report_file then
+      print("Detailed report saved to: " .. report_file)
+    end
+    
+    if total_failures > 0 then
+      vim.api.nvim_err_writeln("Test suite failed with errors")
+    end
+  end, config.setup_delay + 100)
+end
+
+-- Command to run all tests
+vim.api.nvim_create_user_command('TestDAPAll', run_all_tests, {})
+
+-- Command to run framework-specific tests only
+vim.api.nvim_create_user_command('TestDAPFrameworks', function()
+  framework_tests.run_framework_tests()
+end, {})
+
+-- Return the runner for programmatic usage
+return {
+  run = run_all_tests,
+  run_frameworks = framework_tests.run_framework_tests,
+  config = config,
+  thresholds = thresholds
+}

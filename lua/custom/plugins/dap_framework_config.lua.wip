@@ -1,0 +1,173 @@
+-- Framework-specific DAP configurations and templates
+local M = {}
+
+-- Base configuration template
+local base_config = {
+  type = 'python',
+  request = 'launch',
+  name = '',
+  program = '',
+  args = {},
+  env = {},
+  pythonPath = function()
+    local venv = os.getenv('VIRTUAL_ENV')
+    if venv then
+      return venv .. '/bin/python'
+    end
+    return 'python'
+  end
+}
+
+-- Framework-specific configurations
+M.frameworks = {
+  django = {
+    template = vim.tbl_deep_extend('force', base_config, {
+      name = 'Django',
+      program = '${workspaceFolder}/manage.py',
+      args = {'runserver', '--noreload'},
+      django = true,
+      console = 'integratedTerminal',
+      env = {
+        PYTHONUNBUFFERED = '1',
+        DJANGO_SETTINGS_MODULE = '${workspaceFolderBasename}.settings'
+      }
+    }),
+    
+    detect = function()
+      return vim.fn.filereadable('manage.py') == 1
+    end,
+    
+    setup = function()
+      return {
+        project_name = vim.fn.fnamemodify(vim.fn.getcwd(), ':t'),
+        settings_module = nil,  -- Will be auto-detected
+        manage_path = vim.fn.getcwd() .. '/manage.py'
+      }
+    end
+  },
+  
+  flask = {
+    template = vim.tbl_deep_extend('force', base_config, {
+      name = 'Flask',
+      program = '${file}',
+      env = {
+        FLASK_APP = '${file}',
+        FLASK_ENV = 'development',
+        FLASK_DEBUG = '1'
+      },
+      args = {'run', '--no-debugger'},
+      jinja = true,
+      console = 'integratedTerminal'
+    }),
+    
+    detect = function()
+      local content = vim.fn.join(vim.fn.readfile(vim.fn.expand('%')), '\n')
+      return content:match('from%s+flask%s+import%s+Flask')
+    end,
+    
+    setup = function()
+      return {
+        app_name = vim.fn.expand('%:t:r'),
+        host = '127.0.0.1',
+        port = 5000
+      }
+    end
+  },
+  
+  fastapi = {
+    template = vim.tbl_deep_extend('force', base_config, {
+      name = 'FastAPI',
+      program = '${file}',
+      args = {'--reload'},
+      env = {
+        PYTHONPATH = '${workspaceFolder}'
+      },
+      console = 'integratedTerminal'
+    }),
+    
+    detect = function()
+      local content = vim.fn.join(vim.fn.readfile(vim.fn.expand('%')), '\n')
+      return content:match('from%s+fastapi%s+import%s+FastAPI')
+    end,
+    
+    setup = function()
+      return {
+        app_name = vim.fn.expand('%:t:r'),
+        host = '127.0.0.1',
+        port = 8000
+      }
+    end
+  },
+  
+  pyramid = {
+    template = vim.tbl_deep_extend('force', base_config, {
+      name = 'Pyramid',
+      program = '${workspaceFolder}/development.ini',
+      args = {'--reload'},
+      console = 'integratedTerminal'
+    }),
+    
+    detect = function()
+      return vim.fn.filereadable('development.ini') == 1
+    end,
+    
+    setup = function()
+      return {
+        config_file = 'development.ini',
+        app_name = vim.fn.fnamemodify(vim.fn.getcwd(), ':t')
+      }
+    end
+  }
+}
+
+-- Generate configuration for detected framework
+function M.detect_and_configure()
+  for name, framework in pairs(M.frameworks) do
+    if framework.detect() then
+      local config = vim.tbl_deep_extend('force', framework.template, {})
+      local setup = framework.setup()
+      
+      -- Apply framework-specific configuration
+      if name == 'django' then
+        config.env.DJANGO_SETTINGS_MODULE = setup.project_name .. '.settings'
+        config.program = setup.manage_path
+      elseif name == 'flask' then
+        config.env.FLASK_APP = setup.app_name .. '.py'
+        config.args = {'run', '--host=' .. setup.host, '--port=' .. setup.port}
+      elseif name == 'fastapi' then
+        config.args = {'--host', setup.host, '--port', setup.port}
+      elseif name == 'pyramid' then
+        config.program = setup.config_file
+      end
+      
+      return config
+    end
+  end
+  
+  -- Return default Python configuration if no framework detected
+  return base_config
+end
+
+-- Create new framework configuration
+function M.create_framework_config(name, config)
+  if not M.frameworks[name] then
+    M.frameworks[name] = {
+      template = vim.tbl_deep_extend('force', base_config, config.template or {}),
+      detect = config.detect or function() return false end,
+      setup = config.setup or function() return {} end
+    }
+    return true
+  end
+  return false
+end
+
+-- Get all available framework configurations
+function M.get_all_configs()
+  local configs = {}
+  for name, framework in pairs(M.frameworks) do
+    configs[name] = vim.tbl_deep_extend('force', framework.template, {})
+  end
+  return configs
+end
+
+return M

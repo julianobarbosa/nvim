@@ -1,0 +1,108 @@
+local M = {}
+
+-- Performance testing utilities
+local function measure_time(fn, name)
+  local start = vim.loop.hrtime()
+  fn()
+  local end_time = vim.loop.hrtime()
+  local duration = (end_time - start) / 1000000 -- Convert to milliseconds
+  return {
+    name = name,
+    duration = duration
+  }
+end
+
+-- Performance benchmarks
+function M.benchmark_initialization()
+  local results = {}
+  
+  -- Measure DAP setup time
+  table.insert(results, measure_time(function()
+    require('custom.plugins.dap').setup()
+  end, "DAP Setup"))
+  
+  -- Measure UI initialization
+  table.insert(results, measure_time(function()
+    require('dapui').setup()
+  end, "DAP UI Setup"))
+  
+  return results
+end
+
+function M.benchmark_venv_detection()
+  -- Create test environment
+  os.execute('python -m venv perf_test_venv')
+  
+  local result = measure_time(function()
+    local dap = require('dap')
+    dap.configurations.python[1].pythonPath()
+  end, "Virtual Environment Detection")
+  
+  -- Cleanup
+  os.execute('rm -rf perf_test_venv')
+  
+  return {result}
+end
+
+function M.benchmark_breakpoint_operations()
+  local dap = require('dap')
+  local results = {}
+  
+  -- Measure breakpoint toggle
+  table.insert(results, measure_time(function()
+    dap.toggle_breakpoint()
+  end, "Toggle Breakpoint"))
+  
+  -- Measure conditional breakpoint
+  table.insert(results, measure_time(function()
+    dap.set_breakpoint("i == 10")
+  end, "Set Conditional Breakpoint"))
+  
+  return results
+end
+
+function M.run_benchmarks()
+  print("Running DAP Performance Benchmarks...")
+  
+  local all_results = {}
+  local benchmarks = {
+    {name = "Initialization", fn = M.benchmark_initialization},
+    {name = "Virtual Environment", fn = M.benchmark_venv_detection},
+    {name = "Breakpoint Operations", fn = M.benchmark_breakpoint_operations}
+  }
+  
+  -- Run all benchmarks
+  for _, benchmark in ipairs(benchmarks) do
+    print("\nExecuting " .. benchmark.name .. " benchmarks...")
+    local results = benchmark.fn()
+    
+    -- Print results
+    for _, result in ipairs(results) do
+      print(string.format("  %s: %.2fms", result.name, result.duration))
+      table.insert(all_results, result)
+    end
+  end
+  
+  -- Calculate statistics
+  local total_time = 0
+  local max_time = 0
+  local max_operation = ""
+  
+  for _, result in ipairs(all_results) do
+    total_time = total_time + result.duration
+    if result.duration > max_time then
+      max_time = result.duration
+      max_operation = result.name
+    end
+  end
+  
+  -- Print summary
+  print("\nPerformance Summary:")
+  print(string.format("Total time: %.2fms", total_time))
+  print(string.format("Average time: %.2fms", total_time / #all_results))
+  print(string.format("Slowest operation: %s (%.2fms)", max_operation, max_time))
+  
+  return all_results
+end
+
+return M
