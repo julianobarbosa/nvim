@@ -1,63 +1,38 @@
 # System Patterns
 
-## Debug Infrastructure
+## Architecture Overview
+- Modular plugin-based architecture
+- Event-driven debugging system
+- Layered test framework
+- Configurable keymapping system
 
-### Plugin Architecture
-1. Core Components
-   - Base DAP plugin (nvim-dap)
-   - UI layer (nvim-dap-ui)
-   - Language support (nvim-dap-python)
+## Design Patterns
+1. Plugin Management
+   - Isolated plugin configurations
+   - Lazy loading mechanism
+   - Event-based communication
+   - State management per plugin
 
-2. Component Integration
-   - Dependency-based initialization
-   - Event-driven UI updates
-   - Framework-specific configuration loading
+2. Debug Framework
+   - DAP protocol implementation
+   - Test runner integration
+   - Performance monitoring
+   - Memory tracking systems
 
-### Configuration Patterns
-1. Framework Templates
-   ```lua
-   {
-     type = "python",
-     request = "launch",
-     name = "<framework>",
-     program = "${file}",
-     pythonPath = function() return vim.fn.exepath("python") end
-   }
-   ```
+3. Testing Architecture
+   - Unit test framework
+   - Performance test suite
+   - Memory usage tests
+   - System integration tests
 
-2. UI Layout Pattern
-   ```lua
-   {
-     elements = { id = "<component>", size = <ratio> },
-     position = "<location>",
-     size = <dimension>
-   }
-   ```
+## Component Relationships
+- Core Neovim integration
+- Plugin interdependencies
+- Test framework layers
+- Debug protocol handlers
 
-### Event Handling
-1. Debug Events
-   - Initialization hooks
-   - Termination cleanup
-   - State management
-
-2. Performance Events
-   - Resource monitoring
-   - Metrics collection
-   - UI updates
-
-## Design Decisions
-
-1. Plugin Structure
-   - Separate core functionality
-   - Framework-specific modules
-   - Reusable configurations
-
-2. Performance Optimization
-   - Lazy loading
-   - Event-based updates
-   - Resource monitoring
-
-3. Error Management
-   - Structured error handling
-   - Debug logging
-   - Recovery procedures
+## Implementation Guidelines
+- Maintain plugin isolation
+- Follow event-driven patterns
+- Implement proper error handling
+- Support async operations

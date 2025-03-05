@@ -1,0 +1,13 @@
+# Project Patterns and Rules
+PLUGIN_PATH=lua/custom/plugins/
+TEST_SUFFIX=_test.lua
+DAP_PREFIX=dap_
+FILE_STRUCTURE=Maintain modular plugin architecture in lua/custom/plugins/
+TEST_TYPES=Separate test files by type (unit/perf/mem)
+ASYNC_PATTERN=Use async handlers for debug operations
+ERROR_HANDLING=Implement consistent error tracking and recovery
+DOCUMENTATION=Keep memory bank updated with all significant changes
+KEY_MAPS=Store custom keymaps in lua/custom/plugins/keymaps.lua
+MONITOR=Implement system monitoring in separate modules
+TEST_FRAMEWORK=Use modular test runner design
+MEMORY_TRACKING=Separate memory analysis from main tests
