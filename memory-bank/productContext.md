@@ -8,6 +8,7 @@ To create a comprehensive Neovim configuration with advanced debugging and testi
 - Provides comprehensive testing framework
 - Enables performance monitoring
 - Facilitates memory usage analysis
+- Integrates Git workflow management
 
 ## User Experience Goals
 1. Development Workflow
@@ -15,18 +16,21 @@ To create a comprehensive Neovim configuration with advanced debugging and testi
    - Seamless test execution
    - Quick performance analysis
    - Easy memory tracking
+   - Efficient Git operations
 
 2. Code Quality
    - Robust testing capabilities
    - Performance optimization
    - Memory leak detection
    - System resource monitoring
+   - Git change management
 
 3. Productivity Features
    - Quick file navigation
    - Efficient keybindings
    - Automated test runs
    - Integrated diagnostics
+   - Streamlined Git workflows
 
 ## Key Benefits
 - Enhanced debugging capabilities
@@ -34,3 +38,6 @@ To create a comprehensive Neovim configuration with advanced debugging and testi
 - Performance optimization tools
 - Memory analysis features
 - System resource monitoring
+- Integrated Git management
+- Efficient code navigation
+- Documented workflows

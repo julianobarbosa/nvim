@@ -1,70 +1,81 @@
-# Git Integration Implementation Plan
+# GitHub Copilot Integration Plan
 
 ## Overview
-Integrating vim-fugitive with enhanced features and integrations for an optimal Git workflow in Neovim.
+Implementing GitHub Copilot with full integration into Neovim, including completion, which-key support, and custom keybindings.
 
 ## Implementation Plan
 
 ```mermaid
 flowchart TD
-    A[Installation] --> B[Basic Setup]
-    B --> C[Feature Integration]
-    C --> D[Documentation]
+    A[Installation] --> B[Base Configuration]
+    B --> C[Integration Setup]
+    C --> D[Keybindings]
+    D --> E[Documentation]
 
     subgraph A[Installation Phase]
-        A1[Add vim-fugitive to lazy.nvim]
-        A2[Configure lazy loading]
+        A1[Add Copilot.lua plugin]
+        A2[Add Copilot-cmp plugin]
+        A3[Configure lazy.nvim]
     end
 
-    subgraph B[Basic Setup]
-        B1[Default keybindings]
-        B2[Which-key configuration]
-        B3[Statusline integration]
+    subgraph B[Base Configuration]
+        B1[Enable all filetypes]
+        B2[Configure auto-trigger]
+        B3[Setup suggestion display]
     end
 
-    subgraph C[Feature Integration]
-        C1[Telescope integration]
-        C2[Custom commands]
-        C3[Git aliases]
+    subgraph C[Integration Setup]
+        C1[Configure nvim-cmp]
+        C2[Setup which-key]
+        C3[Add statusline indicator]
     end
 
-    subgraph D[Documentation]
-        D1[Update system patterns]
-        D2[Document keybindings]
-        D3[Update progress]
+    subgraph D[Keybindings]
+        D1[Panel controls]
+        D2[Suggestion controls]
+        D3[Enable/Disable toggles]
     end
 ```
 
-## Implementation Steps
+## Components
 
-1. Plugin Configuration
-   - Install vim-fugitive via lazy.nvim
-   - Configure lazy loading on Git-related commands
-   - Set up statusline integration for Git status
+1. Core Plugins:
+   - github/copilot.vim (main plugin)
+   - zbirenbaum/copilot-cmp (completion integration)
 
-2. Which-Key Integration
-   - Create Git command group under `<leader>g`
-   - Map essential Git operations
-   - Add descriptive command documentation
+2. Feature Configuration:
+   - Automatic suggestions in all filetypes
+   - Manual trigger support
+   - Integration with nvim-cmp
+   - Statusline integration
 
-3. Telescope Integration
-   - Configure Git file navigation
-   - Set up branch/commit browsing
-   - Implement custom Git pickers
+3. Which-key Integration:
+   ```
+   <leader>c - Copilot commands
+   ├── t - Toggle Copilot
+   ├── n - Next suggestion
+   ├── p - Previous suggestion
+   ├── s - Suggest now
+   ├── a - Accept suggestion
+   └── d - Dismiss suggestion
+   ```
 
-4. Custom Commands and Aliases
-   - Configure common Git workflows
-   - Set up custom commands for frequent operations
-   - Integrate with existing keybinding patterns
+4. Additional Features:
+   - Statusline Git integration
+   - Multi-suggestion panel
+   - Custom commands
+   - Suggestion preview customization
 
 ## Next Steps
-- Review implementation plan with team
-- Create Git integration module in plugins directory
-- Update system documentation
+1. Create copilot.lua plugin file
+2. Configure nvim-cmp integration
+3. Set up keybindings
+4. Add statusline support
+5. Test and verify functionality
 
 ## Success Criteria
-- [x] Confirm plan aligns with existing architecture
-- [ ] Implement core Git functionality
-- [ ] Configure all integrations
-- [ ] Test all Git operations
-- [ ] Update documentation
+- [ ] Copilot suggestions working in all file types
+- [ ] Both automatic and manual triggers functional
+- [ ] Which-key integration complete
+- [ ] nvim-cmp integration working
+- [ ] Statusline showing Copilot status
