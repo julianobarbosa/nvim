@@ -1,86 +1,123 @@
-# System Patterns
+# System Patterns and Architecture
 
-## Architecture Overview
+## Git Commit Message System
+
+### Component Structure
 ```mermaid
 flowchart TD
-    A[Neovim Core] --> B[Plugin System]
-    B --> C[Custom Plugins]
-    C --> D[Copilot Integration]
-    C --> E[Fugitive Integration]
-    D --> F[Git Commit Enhancement]
-    E --> F
+    A[commit_template.lua] --> B[Template Generation]
+    A --> C[Validation Logic]
+    A --> D[Emoji Mappings]
+    
+    E[copilot_commit.lua] --> F[Autocmds]
+    E --> G[Completion Source]
+    E --> H[Buffer Commands]
+    
+    I[copilot.lua] --> J[Basic Setup]
+    I --> K[CMP Integration]
+    I --> L[Keymaps]
+
+    M[GitHub Copilot] --> N[Commit Suggestions]
+    N --> G
+    N --> O[Smart Completions]
 ```
 
-## Module Structure
-- `lua/custom/plugins/`: Root plugin directory
-  - `copilot.lua`: Core Copilot configuration
-  - `keymaps.lua`: Centralized keybinding definitions
-  - `git/`: Git-related functionality
-  - `utils/`: Shared utilities
+### Core Patterns
 
-## Design Patterns
-1. Event-Driven Architecture
-   - Autocmd triggers for git operations
-   - Buffer event handling
-   - Status updates via events
+1. **Template Management**
+   - Centralized emoji mappings
+   - Category-based organization
+   - Validation rules as constants
+   - Template generation functions
 
-2. Observer Pattern
-   - Copilot status monitoring
-   - Buffer state tracking
-   - Configuration changes
+2. **Validation Strategy**
+   - Pre-save validation
+   - Real-time format checking
+   - Warning-based approach
+   - Clear error messaging
 
-3. Command Pattern
-   - Keybinding implementations
-   - Toggle functionality
-   - Git operations
+3. **Integration Points**
+   - Autocmd-based initialization
+   - Buffer-specific commands
+   - nvim-cmp source integration
+   - Which-key menu structure
+   - Copilot suggestions integration
+   - Smart completion context
 
-4. Factory Pattern
-   - Buffer configuration creation
-   - Status line component generation
-   - Command registration
+4. **Error Handling**
+   ```lua
+   -- Pattern for validation results
+   return valid, errors_table
+   
+   -- Pattern for notifications
+   vim.notify(message, level)
+   ```
 
-## Integration Patterns
-1. Copilot Integration
-   - Buffer-local activation
-   - Context-aware suggestions
-   - Status management
+5. **Buffer Management**
+   ```lua
+   -- Pattern for buffer-local operations
+   local buf = vim.api.nvim_get_current_buf()
+   vim.api.nvim_buf_set_lines(buf, start, end, false, lines)
+   ```
 
-2. Fugitive Integration
-   - Commit buffer detection
-   - Command augmentation
-   - Status synchronization
+6. **Completion Integration**
+   ```lua
+   -- Pattern for cmp source
+   source = {
+     name = 'name',
+     priority = value,
+     get_trigger_characters = function()
+     complete = function(_, callback)
+   }
+   ```
 
-## Error Handling
-1. Consistent Pattern
-   - Clear error messages
-   - Fallback behaviors
-   - User notifications
+### Design Decisions
 
-2. Recovery Strategies
-   - Configuration validation
-   - Safe state restoration
-   - Graceful degradation
+1. **Modular Structure**
+   - Separate template logic
+   - Independent completion source
+   - Isolated validation rules
+   - Copilot integration layer
 
-## Performance Considerations
-1. Lazy Loading
-   - On-demand initialization
-   - Deferred setup
-   - Resource management
+2. **User Experience**
+   - Automatic template insertion
+   - Non-blocking validation
+   - Smart completions
+   - Clear feedback
+   - AI-assisted suggestions
 
-2. Event Optimization
-   - Debounced operations
-   - Efficient buffer handling
-   - Minimal redraws
+3. **Performance Considerations**
+   - Lazy loading where possible
+   - Buffer-local operations
+   - Cached emoji mappings
+   - Efficient validation
+   - Optimized Copilot calls
 
-# Coding pattern preferences
-   - Always prefer simple solutions
-   - Avoid duplication of code whenever possible, which means checking for other areas of the codebase that might already have similar code and functionality
-   - Write code that takes into account the different environments: dev, hlg, and prd
-   - You are careful to only make changes that are requested or you are confident are well understood and related to the change being requested
-   - When fixing an issue or bug, do not introduce a new pattern or technology without first exhausting all options for the existing implementation. And if you finally do this, make sure to remove the old ipmlementation afterwards so we don't have duplicate logic.
-   - Keep the codebase very clean and organized
-   - Avoid writing scripts in files if possible, especially if the script is likely only to be run once
-   - Avoid having files over 200-300 lines of code. Refactor at that point.
-   - Mocking data is only needed for tests, never mock data for dev or prd
-   - Never add stubbing or fake data patterns to code that affects the dev or prd environments
-   - Never overwrite my .env file without first asking and confirming
+4. **Extensibility**
+   - Configurable emoji maps
+   - Customizable templates
+   - Pluggable validation
+   - Flexible categories
+   - AI suggestion filters
+
+### Testing Strategy
+
+1. **Unit Tests**
+   - Template generation
+   - Message validation
+   - Emoji mapping
+   - Format checking
+   - Copilot integration
+
+2. **Integration Tests**
+   - Autocommand behavior
+   - Completion sources
+   - Buffer operations
+   - Command execution
+   - AI suggestion quality
+
+3. **Performance Tests**
+   - Template generation speed
+   - Validation efficiency
+   - Completion responsiveness
+   - Copilot response time

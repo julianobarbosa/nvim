@@ -1,0 +1,17 @@
+# Workflow Preferences 
+
+## Task Execution
+- Only implement features directly requested to avoid scope creep.
+- Split complex tasks into smaller, manageable steps.
+- Pause after each significant step for your approval to proceed.
+
+## Planning and Progress
+- Before starting a major feature, outline a plan in plan.md for your review.
+- Log completed work in progress.md after each task.
+- Update TODO.txt with upcoming tasks after each step.
+- If context exceeds 100k tokens, summarize it in context-summary.md and begin a new chat.
+
+## Testing and Feedback
+- Write basic tests for core functionality like text extraction and Markdown conversion.
+- Propose edge case tests, like very long threads or deleted comments.
+- Adapt level of detail in steps based on your feedback.

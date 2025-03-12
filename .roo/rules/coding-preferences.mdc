@@ -1,0 +1,32 @@
+Configure NeoVim as a modern IDE with the following specifications:
+
+1. Core Setup Requirements:
+- Install and configure essential plugins using a package manager (e.g., Packer, Lazy)
+- Set up LSP for code intelligence and autocompletion
+- Configure treesitter for syntax highlighting
+- Implement fuzzy finding capabilities
+- Enable Git integration
+
+2. Key Features to Implement:
+- Code completion with snippets
+- Integrated terminal
+- File explorer
+- Status line
+- Tab/Buffer management
+- Error diagnostics
+- Quick formatting
+- Find/Replace across files
+
+3. Performance Guidelines:
+- Lazy load plugins when possible
+- Use lua-based plugins over vimscript
+- Keep startup time under 100ms
+- Implement efficient keybindings
+- Cache plugin data appropriately
+
+4. Required Output Format:
+- Provide complete lua configuration files
+- Include detailed comments for each major section
+- List all required system dependencies
+- Document custom keybindings
+- Explain any special setup steps

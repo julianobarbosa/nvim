@@ -1,38 +1,86 @@
 # Technical Context
 
-## Core Technologies
-- Primary Language: Lua
-- Platform: Neovim
-- Debug Framework: DAP (Debug Adapter Protocol)
-- Git Integration: vim-fugitive
+## Development Environment
+1. Core Platform
+   - Neovim 0.9+
+   - Lua runtime
+   - Git integration
 
-## Development Setup
-- Modular plugin architecture
-- Custom test framework integration
-- Keybinding management system
-- File tree and navigation tools
-- Git workflow integration
+2. Required Plugins
+   - GitHub Copilot
+   - vim-fugitive
+   - which-key (for keybinding documentation)
+   - nvim-cmp (for completion)
+
+## Project Structure
+```
+.
+├── lua/
+│   └── custom/
+│       └── plugins/
+│           ├── copilot.lua
+│           ├── copilot_commit.lua
+│           ├── commit_template.lua
+│           ├── keymaps.lua
+│           └── git/
+└── memory-bank/
+    └── (documentation files)
+```
 
 ## Dependencies
-- Debug Adapter Protocol (DAP)
-- Harpoon for navigation
-- Custom test runners
-- System monitoring tools
-- vim-fugitive for Git operations
-- Telescope for Git navigation
-- Which-key for command documentation
+1. Primary
+   - GitHub Copilot API
+   - Git command-line tools
+   - Fugitive.vim interfaces
+   - nvim-cmp framework
+
+2. Development
+   - Lua LSP
+   - Neovim API
+   - Test frameworks
+   - Buffer management APIs
 
 ## Technical Constraints
-- Neovim compatibility requirements
-- Lua language limitations
-- Plugin integration boundaries
-- Performance considerations
-- Git command execution overhead
+1. Performance
+   - Minimal impact on git operations
+   - Efficient buffer handling
+   - Responsive UI updates
+   - Optimized Copilot calls
 
-## Development Tools
-- Visual Studio Code (for development)
-- Integrated testing framework
-- Built-in debugging tools
-- Custom diagnostic utilities
-- Git integration tools
-- Which-key command documentation
+2. Integration
+   - Respect existing Copilot settings
+   - Maintain Fugitive workflow
+   - Follow Neovim conventions
+   - Smart completion context
+
+3. Resource Usage
+   - Memory-efficient suggestions
+   - Optimized event handling
+   - Controlled API requests
+   - Cached completion items
+
+## Configuration Management
+1. Settings
+   - Buffer-local Copilot state
+   - User preferences
+   - Keybinding customization
+   - Completion priorities
+
+2. State Management
+   - Git buffer detection
+   - Copilot activation status
+   - Error conditions
+   - Completion context
+
+## Testing Requirements
+1. Unit Tests
+   - Buffer management
+   - Event handling
+   - Configuration logic
+   - Template validation
+
+2. Integration Tests
+   - Copilot interaction
+   - Git operations
+   - User commands
+   - Completion behavior

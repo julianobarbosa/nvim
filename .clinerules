@@ -1,13 +1,43 @@
 # Project Patterns and Rules
+
+## Structure and Architecture
 PLUGIN_PATH=lua/custom/plugins/
-TEST_SUFFIX=_test.lua
-DAP_PREFIX=dap_
 FILE_STRUCTURE=Maintain modular plugin architecture in lua/custom/plugins/
-TEST_TYPES=Separate test files by type (unit/perf/mem)
+KEY_MAPS=Store custom keymaps in lua/custom/plugins/keymaps.lua
 ASYNC_PATTERN=Use async handlers for debug operations
 ERROR_HANDLING=Implement consistent error tracking and recovery
-DOCUMENTATION=Keep memory bank updated with all significant changes
-KEY_MAPS=Store custom keymaps in lua/custom/plugins/keymaps.lua
-MONITOR=Implement system monitoring in separate modules
-TEST_FRAMEWORK=Use modular test runner design
 MEMORY_TRACKING=Separate memory analysis from main tests
+
+## Implementation Process
+SCOPE_CONTROL=Only implement features directly requested to avoid scope creep
+TASK_BREAKDOWN=Split complex tasks into smaller, manageable steps
+PAUSE_CONFIRM=Pause after each significant step for approval
+PRIORITY_LEVELS=Classify tasks as High/Medium/Low priority
+CHANGE_IMPACT=Classify changes as Minor/Moderate/Significant
+
+## Testing Standards
+TEST_SUFFIX=_test.lua
+TEST_TYPES=Separate test files by type (unit/perf/mem)
+TEST_FRAMEWORK=Use modular test runner design
+TEST_CORE=Write tests for core functionality like text extraction and conversion
+TEST_EDGE=Implement edge case tests for exceptional scenarios
+MONITOR=Implement system monitoring in separate modules
+
+## Documentation Requirements
+DOCUMENTATION=Keep memory bank updated with all significant changes
+PLANNING=Create plan.md before starting major features
+PROGRESS=Log completed work in progress.md after each task
+TODO=Update TODO.txt with upcoming tasks after each step
+CONTEXT=Summarize in context-summary.md if context exceeds 100k tokens
+
+## Communication Protocol
+UPDATE_FORMAT=[Project]-[Task]-[Status] with Summary/Impact/Completed/Pending
+CLARIFICATION=Ask specific questions when requirements are unclear
+BLOCKER_HANDLING=Escalate blockers or dependencies immediately
+DETAIL_LEVEL=Adapt level of detail based on feedback
+
+## Language-Specific Standards
+PYTHON_LSP=Use pyright or python-lsp-server with flake8/mypy/pylint
+RUST_TOOLS=Use rust-analyzer, clippy, and rustfmt
+LUA_FORMAT=Use stylua for Lua formatting
+GO_TOOLS=Use gopls, golangci-lint, and gofmt

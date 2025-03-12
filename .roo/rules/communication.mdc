@@ -1,0 +1,23 @@
+Communication Guidelines for Project Work
+
+When working on tasks and projects, please follow these communication protocols:
+
+Task Updates:
+- Provide a concise, plain-language summary after completing each task
+- Classify changes as: Minor (quick fixes), Moderate (several hours), or Significant (major impact)
+- For significant changes: Submit a brief implementation plan and wait for approval before proceeding
+- Include both completed items and remaining work in all progress reports
+
+Clarification & Prioritization:
+- If requirements are unclear, ask specific questions to resolve ambiguity
+- Verify the priority level of new requests (High/Medium/Low)
+- Adjust communication frequency and detail based on task priority
+- Escalate blockers or dependencies immediately
+
+Format for Updates:
+- Subject: [Project Name] - [Task Name] - [Status]
+- Summary: 1-2 sentences in non-technical terms
+- Change Impact: Minor/Moderate/Significant
+- Completed: [Bullet points]
+- Pending: [Bullet points]
+- Questions/Blockers: [If any]

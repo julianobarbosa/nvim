@@ -27,17 +27,45 @@ return {
       }, { prefix = "<leader>" })
 
       -- Configure statusline Git integration with mini.statusline
-      local statusline = require('mini.statusline')
+      local M = {}
+      
+      -- Safe require for mini.statusline
+      local ok_mini, statusline = pcall(require, 'mini.statusline')
+      if not ok_mini then
+        return
+      end
+
+      -- Store original git section function
       local default_section_git = statusline.section_git
+
+      -- New safe git section implementation
       statusline.section_git = function()
-        local git_info = default_section_git()
-        if git_info == '' then return '' end
-        
-        -- Get Git branch and format it
-        local branch = vim.fn.FugitiveHead()
-        if branch == '' then return git_info end
-        
-        return string.format(' %s', branch)
+        -- Guard against missing default function
+        if type(default_section_git) ~= 'function' then
+          return ''
+        end
+
+        -- Safely get git info
+        local git_info = ''
+        local ok_git, result = pcall(default_section_git)
+        if ok_git and result then
+          git_info = result
+        end
+
+        -- Early return if no git info
+        if git_info == '' then
+          return ''
+        end
+
+        -- Safely get branch name
+        local branch = ''
+        local ok_head, head = pcall(vim.fn.FugitiveHead)
+        if ok_head and head and head ~= '' then
+          branch = head
+        end
+
+        -- Return formatted string
+        return string.format(' %s', branch ~= '' and branch or git_info)
       end
 
       -- Set up additional Telescope Git pickers

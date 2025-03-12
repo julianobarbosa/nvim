@@ -13,6 +13,15 @@ return {
       vim.g.copilot_no_tab_map = true
       vim.g.copilot_assume_mapped = true
       vim.g.copilot_tab_fallback = ""
+      vim.g.copilot_filetypes = {
+        gitcommit = true,
+        markdown = true,
+        text = true,
+        help = true,
+      }
+
+      -- Enable commit message functionality
+      require('custom.plugins.copilot_commit').setup()
 
       -- Configure which-key integration
       local wk = require('which-key')
@@ -26,19 +35,10 @@ return {
           r = { "<cmd>Copilot refresh<CR>", "Refresh suggestions" },
           d = { "<cmd>Copilot dismiss<CR>", "Dismiss suggestion" },
           a = { "<cmd>Copilot accept<CR>", "Accept suggestion" },
+          m = { "<cmd>CopilotCommitTemplate<CR>", "Insert commit template" },
+          v = { "<cmd>CopilotValidateCommit<CR>", "Validate commit message" },
         },
       }, { prefix = "<leader>" })
-
-      -- Setup statusline integration
-      local statusline = require('mini.statusline')
-      local default_section_status = statusline.section_status
-      statusline.section_status = function()
-        local status = default_section_status()
-        if vim.g.copilot_enabled then
-          return status .. ' 🤖'
-        end
-        return status
-      end
 
       -- Setup copilot-cmp integration
       require('copilot_cmp').setup({

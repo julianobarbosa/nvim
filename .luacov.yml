@@ -1,0 +1,38 @@
+--- LuaCov configuration
+include:
+  - "lua/custom/plugins/.+%.lua$"
+
+exclude:
+  - "lua/custom/plugins/tests/.+%.lua$"
+  - "lua/custom/plugins/pack/.+%.lua$"
+  - "lua/custom/plugins/.+_spec%.lua$"
+
+statsfile: luacov.stats.out
+reportfile: luacov.report.out
+deletestats: true
+
+runreport: true
+deletestats: true
+
+modules:
+  enable: true
+  reportfile: coverage/modules.report
+
+branches:
+  enable: true
+  reportfile: coverage/branches.report
+
+conditions:
+  enable: true
+  reportfile: coverage/conditions.report
+
+reporter: html
+html:
+  outputDirectory: coverage
+  projectName: nvim-repomix
+  directoryIndex: true
+  branchCoverage: true
+  functionCoverage: true
+  highlightLines: true
+  lowUpperBound: 35
+  mediumUpperBound: 70

@@ -1,0 +1,49 @@
+--- LuaCov configuration file
+return {
+  -- Patterns for files to include in coverage analysis
+  include = {
+    'lua/custom/plugins/',
+  },
+
+  -- Patterns for files to exclude from coverage analysis
+  exclude = {
+    'lua/custom/plugins/tests/',
+    'lua/custom/plugins/pack/',
+    'lua/custom/plugins/%.spec%.lua$',
+  },
+
+  -- Various options
+  statsfile = 'luacov.stats.out',
+  reportfile = 'luacov.report.out',
+  deletestats = true,
+  modules = true,
+
+  -- Enable branch coverage
+  branches = true,
+
+  -- Enable function coverage
+  functions = true,
+
+  -- Enable line coverage
+  lines = true,
+
+  -- Enable condition coverage
+  conditions = true,
+
+  -- Use HTML reporter
+  reporter = "html",
+
+  -- HTML reporter options
+  html = {
+    outputDirectory = "coverage",
+    projectName = "nvim-repomix",
+    themePath = nil, -- use default theme
+    maxLines = 100,
+    showLines = true,
+    showBranches = true,
+    showConditions = true,
+    showFunctions = true,
+    sortFilesByName = true,
+    hideFullyCovered = false
+  }
+}
