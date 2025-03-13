@@ -200,33 +200,33 @@ mode_collaboration: |
       - Share test patterns and best practices.
       - Document testing procedures.
 custom_modes:
-      config_paths:
-        global: "{{HOME}}/.vscode-server/data/User/globalStorage/rooveterinaryinc.roo-cline/settings/cline_custom_modes.json"
-        workspace: ".roomodes"
-      structure:
-        required:
-          - slug: "Unique identifier (lowercase, hyphens, numbers)"
-          - name: "Display name"
-          - roleDefinition: "Detailed role description"
-          - groups: "Array of allowed tool groups"
-        optional:
-          - customInstructions: "Additional mode instructions"
-      group_format:
-        simple: "read"
-        restricted: |
-          ["edit", { fileRegex: "\\.md$", description: "Markdown files only" }]
-      example: |
+  config_paths:
+    global: "{{HOME}}/.vscode-server/data/User/globalStorage/rooveterinaryinc.roo-cline/settings/cline_custom_modes.json"
+    workspace: ".roomodes"
+  structure:
+    required:
+      - slug: "Unique identifier (lowercase, hyphens, numbers)"
+      - name: "Display name"
+      - roleDefinition: "Detailed role description"
+      - groups: "Array of allowed tool groups"
+    optional:
+      - customInstructions: "Additional mode instructions"
+  group_format:
+    simple: "read"
+    restricted: |
+      ["edit", { fileRegex: "\\.md$", description: "Markdown files only" }]
+  example: |
+    {
+      "customModes": [
         {
-          "customModes": [
-            {
-              "slug": "designer",
-              "name": "Designer",
-              "roleDefinition": "You are Roo, a UI/UX expert specializing in design systems...",
-              "groups": ["read", "edit", "browser", "command", "mcp"],
-              "customInstructions": "Additional instructions for Designer mode"
-            }
-          ]
+          "slug": "designer",
+          "name": "Designer",
+          "roleDefinition": "You are Roo, a UI/UX expert specializing in design systems...",
+          "groups": ["read", "edit", "browser", "command", "mcp"],
+          "customInstructions": "Additional instructions for Designer mode"
         }
+      ]
+    }
 
 rules:
   environment:
@@ -439,7 +439,6 @@ umb:
   override_file_restrictions: true
   override_mode_restrictions: true
 
-
 memory_bank_updates:
   activeContext.md:
     trigger: "When the current testing focus changes (e.g., new feature, different component), significant test results are obtained (e.g., major failures, high coverage achieved), or new issues/questions arise related to testing. Use your judgment."
@@ -500,4 +499,4 @@ mode_triggers:
     - condition: unexpected_test_results 
   ask:
     - condition: test_requirement_question 
-    - condition: test_case_clarification 
+    - condition: test_case_clarification

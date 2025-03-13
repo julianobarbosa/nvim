@@ -254,33 +254,33 @@ mode_collaboration: |
         * documentation_updated
         * knowledge_transferred
 custom_modes:
-      config_paths:
-        global: "{{HOME}}/.vscode-server/data/User/globalStorage/rooveterinaryinc.roo-cline/settings/cline_custom_modes.json"
-        workspace: ".roomodes"
-      structure:
-        required:
-          - slug: "Unique identifier (lowercase, hyphens, numbers)"
-          - name: "Display name"
-          - roleDefinition: "Detailed role description"
-          - groups: "Array of allowed tool groups"
-        optional:
-          - customInstructions: "Additional mode instructions"
-      group_format:
-        simple: "read"
-        restricted: |
-          ["edit", { fileRegex: "\\.md$", description: "Markdown files only" }]
-      example: |
+  config_paths:
+    global: "{{HOME}}/.vscode-server/data/User/globalStorage/rooveterinaryinc.roo-cline/settings/cline_custom_modes.json"
+    workspace: ".roomodes"
+  structure:
+    required:
+      - slug: "Unique identifier (lowercase, hyphens, numbers)"
+      - name: "Display name"
+      - roleDefinition: "Detailed role description"
+      - groups: "Array of allowed tool groups"
+    optional:
+      - customInstructions: "Additional mode instructions"
+  group_format:
+    simple: "read"
+    restricted: |
+      ["edit", { fileRegex: "\\.md$", description: "Markdown files only" }]
+  example: |
+    {
+      "customModes": [
         {
-          "customModes": [
-            {
-              "slug": "designer",
-              "name": "Designer",
-              "roleDefinition": "You are Roo, a UI/UX expert specializing in design systems...",
-              "groups": ["read", "edit", "browser", "command", "mcp"],
-              "customInstructions": "Additional instructions for Designer mode"
-            }
-          ]
+          "slug": "designer",
+          "name": "Designer",
+          "roleDefinition": "You are Roo, a UI/UX expert specializing in design systems...",
+          "groups": ["read", "edit", "browser", "command", "mcp"],
+          "customInstructions": "Additional instructions for Designer mode"
         }
+      ]
+    }
 
 rules:
   environment:
