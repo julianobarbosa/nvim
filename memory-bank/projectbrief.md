@@ -10,9 +10,15 @@
 ## Project Goals
 - Create a robust, maintainable Neovim setup
 - Implement extensive testing capabilities
+- Implement extensive testing capabilities for Python
+- Implement extensive testing capabilities for Rust
+- Implement extensive testing capabilities for GOLang
+- Implement extensive testing capabilities for Lua
 - Provide debugging tools for development
 - Enable automated test execution
 - Streamline Git operations
+- Implement capabilities for DevOps using Terraform as Iac
+- Implement capabilities for DevOps using Ansible as Iac
 
 ## Scope
 - Custom plugin configuration

@@ -10,3 +10,4 @@
 
 ## Next Steps
 - Test the new keybindings to ensure they work as expected.
+- [2025-03-18] Validate Python LSP setup and ensure documentation completeness.
